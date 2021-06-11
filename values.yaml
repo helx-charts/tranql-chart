@@ -1,0 +1,98 @@
+# -- Image of tranql web server.
+image: helxplatform/tranql-app
+# -- Tranql web server replica count.
+replicas: 1
+# -- Tranql web server container port.
+port: 8081
+# -- Gunicorn config.
+gunicorn:
+  # -- Gunicorn worker count.
+  workerCount: 4
+  # -- Gunicorn worker timeout.
+  workerTimeout: 300
+service:
+  # -- Tranql K8s service type.
+  type: ClusterIP
+
+
+# -- Config for existing redis
+existingRedis:
+  host: ""
+  port: ""
+  password: ""
+  secret: ""
+  secretPasswordKey: ""
+
+# -- Data source for loading data into Redis. If using current redis make sure this is a valid and accessible rdb file.
+redisDumpUri: "" # https://stars.renci.org/var/kgx_data/roger_graph.rdb
+
+# -- Ingress for tranql web server
+ingress:
+  class:
+  enable: false
+  tls:
+    secretName:
+  host:
+
+redis:
+  # -- Enables redis
+  enabled: true
+  # To allow loading seeding the db from rdb files.
+  # --- start seeddb configuration
+  persistence:
+    # -- Volume claim to store redis dump file. Used for seeding the redis database.
+    existingClaim: tranql-redis-pvc
+  # -- Disables auto backup of redis. 
+  configmap: |-
+    # Disables appendonly , this instance is readonly. And needs to be
+    # seeded from RDB files if needed.
+    appendonly no
+    # Disable RDB persistence, AOF persistence already enabled.
+    save ""
+  # For simplicity in this chart we use auth disable.
+  # When using as part of other chart, tranql chart will check
+  # for usePassword True. And currently only supports values for
+  # existingSecret and existingSecretPasswordKey.
+  usePassword: false
+  # --- end seeddb configuration
+  image:
+    repository: redislabs/redisgraph
+    tag: 2.2.14
+  redis:
+    command: "redis-server"
+  # --- no clustering for standalone
+  # issue with seeding replicas using redis chart.
+  cluster:
+    slaveCount: 1
+
+  master:
+    resources:
+      requests:
+        memory: 16Gi
+        cpu: 2
+    command: ""
+    # Command to do a little house keeping
+    # Use this to download rdb file if seeding needs to be done
+    readinessProbe:
+      enabled: false
+    livenessProbe:
+      enabled: false
+    extraFlags:
+      - "--loadmodule /usr/lib/redis/modules/redisgraph.so"
+    service:
+      port: 6379
+  clusterDomain: "blackbalsam-cluster"
+  slave:
+    resources:
+      requests:
+        memory: 16Gi
+        cpu: 2
+    command: ""
+    readinessProbe:
+      enabled: false
+    livenessProbe:
+      enabled: false
+    extraFlags:
+      - "--loadmodule /usr/lib/redis/modules/redisgraph.so"
+    service:
+      port: 6379

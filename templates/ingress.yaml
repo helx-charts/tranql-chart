@@ -1,0 +1,27 @@
+{{ if .Values.ingress.enable }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "tranql.fullname" . }}-ingress
+  annotations:
+    {{ if .Values.ingress.class }}
+    kubernetes.io/ingress.class: "{{ .Values.ingress.class }}"
+    {{ end }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "{{ .Values.gunicorn.workerTimeout }}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.gunicorn.workerTimeout }}"
+spec:
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+{{- end }}
+  rules:
+  # front end
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "tranql.fullname" . }}
+          servicePort: {{ .Values.port }}
+{{ end }}
