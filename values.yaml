@@ -1,21 +1,14 @@
-# -- Image of tranql web server.
 image: helxplatform/tranql-app
-# -- Tranql web server replica count.
+# --  Overrides image tag. default is Chart.appversion
+imageTagOverride: ""
 replicas: 1
-# -- Tranql web server container port.
 port: 8081
-# -- Gunicorn config.
 gunicorn:
-  # -- Gunicorn worker count.
   workerCount: 4
-  # -- Gunicorn worker timeout.
   workerTimeout: 300
 service:
-  # -- Tranql K8s service type.
   type: ClusterIP
 
-
-# -- Config for existing redis
 existingRedis:
   host: ""
   port: ""
@@ -23,26 +16,19 @@ existingRedis:
   secret: ""
   secretPasswordKey: ""
 
-# -- Data source for loading data into Redis. If using current redis make sure this is a valid and accessible rdb file.
 redisDumpUri: "" # https://stars.renci.org/var/kgx_data/roger_graph.rdb
-
-# -- Ingress for tranql web server
 ingress:
   class:
   enable: false
   tls:
     secretName:
   host:
-
 redis:
-  # -- Enables redis
   enabled: true
   # To allow loading seeding the db from rdb files.
   # --- start seeddb configuration
   persistence:
-    # -- Volume claim to store redis dump file. Used for seeding the redis database.
     existingClaim: tranql-redis-pvc
-  # -- Disables auto backup of redis. 
   configmap: |-
     # Disables appendonly , this instance is readonly. And needs to be
     # seeded from RDB files if needed.
