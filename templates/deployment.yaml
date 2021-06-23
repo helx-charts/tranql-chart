@@ -25,7 +25,7 @@ spec:
           emptyDir: {}
       containers:
       - name: {{ include "tranql.fullname" . }}-web-container
-        image: {{ .Values.image }}:{{ .Chart.AppVersion }}
+        image: {{ .Values.image }}:{{ include "tranql.imageTag" . }}
         command:
           - "/usr/local/bin/gunicorn"
           - "--workers={{ .Values.gunicorn.workerCount }}"

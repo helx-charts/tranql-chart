@@ -80,6 +80,16 @@ Get the redis password secret.
 {{- end -}}
 
 {{/*
+Override image tag
+*/}}
+{{- define "tranql.imageTag" -}}
+{{- if .Values.imageTagOverride -}}
+{{- printf "%s" .Values.imageTagOverride -}}
+{{- else -}}
+{{- printf "%s" .Chart.AppVersion -}}
+{{- end -}}
+{{- end -}}
+{{/*
 Get the password key to be retrieved from Redis(TM) secret.
 */}}
 {{- define "tranql.redis.secretPasswordKey" -}}
