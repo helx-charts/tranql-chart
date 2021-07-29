@@ -9,6 +9,9 @@ gunicorn:
 service:
   type: ClusterIP
 
+# -- Tranql query timeout sent to redis in milliseconds
+tranql_redis_query_timeout: 10000 # 10 secs
+
 existingRedis:
   host: ""
   port: ""
@@ -54,8 +57,7 @@ redis:
   master:
     resources:
       requests:
-        memory: 16Gi
-        cpu: 2
+        memory: 10Gi
     command: ""
     # Command to do a little house keeping
     # Use this to download rdb file if seeding needs to be done
@@ -71,8 +73,7 @@ redis:
   slave:
     resources:
       requests:
-        memory: 16Gi
-        cpu: 2
+        memory: 10Gi
     command: ""
     readinessProbe:
       enabled: false

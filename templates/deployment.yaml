@@ -45,6 +45,8 @@ spec:
             value: "/var/nfs/tranql-frontend_access_log"
           - name: ERROR_LOG
             value: "/var/nfs/tranql-frontend_error_log"
+          - name: REDIS_QUERY_TIMEOUT
+            value: "{{ .Values.tranql_redis_query_timeout }}"
           - name: REDIS_PASSWORD
           {{- if and .Values.redis.enabled .Values.redis.usePassword }}
             {{- if .Values.redis.password }}
