@@ -76,9 +76,9 @@ spec:
             mountPath: /var/nfs
           - name: config-yaml
             subPath: conf.yml
-            mountPath: /tranql/tranql/conf.yml
+            mountPath: /home/tranql/tranql/src/tranql/conf.yml
           - name: config-yaml
             subPath: schema.yml
-            mountPath: /tranql/tranql/conf/schema.yaml
+            mountPath: /home/tranql/tranql/src/tranql/conf/schema.yaml
         imagePullPolicy: Always
       restartPolicy: Always
