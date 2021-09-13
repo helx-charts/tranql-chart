@@ -27,7 +27,7 @@ spec:
       - name: {{ include "tranql.fullname" . }}-web-container
         image: {{ .Values.image }}:{{ include "tranql.imageTag" . }}
         command:
-          - "/usr/local/bin/gunicorn"
+          - "gunicorn"
           - "--workers={{ .Values.gunicorn.workerCount }}"
           - "--bind=0.0.0.0:{{ .Values.port }}"
           - "--timeout={{ .Values.gunicorn.workerTimeout }}"
