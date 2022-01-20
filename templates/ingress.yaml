@@ -1,31 +1,53 @@
-{{ if .Values.ingress.enable }}
+{{ if .Values.ingress.enabled }}
+
+{{- $fullName := include "tranql.fullname" . -}}
+{{- $svcPort := .Values.port -}}
+{{- if and .Values.ingress.class (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.class }}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ include "tranql.fullname" . }}-ingress
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{ if .Values.ingress.class }}
-    kubernetes.io/ingress.class: "{{ .Values.ingress.class }}"
-    {{ end }}
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "{{ .Values.gunicorn.workerTimeout }}"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.gunicorn.workerTimeout }}"
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
 spec:
-{{- if .Values.ingress.tls }}
+ {{- if and .Values.ingress.class (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
   tls:
     - hosts:
-        - {{ .Values.ingress.host | quote }}
+        - {{ .Values.ingress.host }}
       secretName: {{ .Values.ingress.tls.secretName }}
-{{- end }}
+  {{- end }}
   rules:
-  # front end
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: "/"
+        {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+        pathType: "{{ .Values.ingress.pathType }}"
+        {{- end }}
         backend:
+          {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
           service:
-            name: {{ include "tranql.fullname" . }}
+            name: {{ $fullName }}
             port:
-              number: {{ .Values.port }}
+              number: {{ $svcPort }}
+          {{- else }}
+          serviceName: {{ $fullName }}
+          servicePort: {{ $svcPort }}
+          {{- end }}
 {{ end }}
