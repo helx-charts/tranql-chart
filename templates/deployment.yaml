@@ -26,6 +26,9 @@ spec:
       containers:
       - name: {{ include "tranql.fullname" . }}-web-container
         image: {{ .Values.image }}:{{ include "tranql.imageTag" . }}
+        {{ with .Values.resources }}
+        resources: {{ . | toYaml | nindent 10 }}
+        {{ end }}
         command:
           - "gunicorn"
           - "--workers={{ .Values.gunicorn.workerCount }}"
