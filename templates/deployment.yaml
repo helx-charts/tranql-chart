@@ -15,6 +15,8 @@ spec:
       labels:
         {{- include "tranql.selectorLabels" . | nindent 8 }}
         service-type: web-server
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/config-map.yaml") . | sha256sum }}
     spec:
       volumes:
         - name: config-yaml
@@ -26,6 +28,9 @@ spec:
       containers:
       - name: {{ include "tranql.fullname" . }}-web-container
         image: {{ .Values.image }}:{{ include "tranql.imageTag" . }}
+        {{ with .Values.resources }}
+        resources: {{ . | toYaml | nindent 12 }}
+        {{ end }}
         command:
           - "gunicorn"
           - "--workers={{ .Values.gunicorn.workerCount }}"
@@ -48,18 +53,18 @@ spec:
           - name: REDIS_QUERY_TIMEOUT
             value: "{{ .Values.tranql_redis_query_timeout }}"
           - name: REDIS_PASSWORD
-          {{- if and .Values.redis.enabled .Values.redis.usePassword }}
-            {{- if .Values.redis.password }}
-            value: {{ .Values.redis.password }}
+          {{- if and .Values.redis.enabled .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.password }}
+            value: {{ .Values.redis.auth.password }}
             {{- else }}
             valueFrom:
               secretKeyRef:
-                {{- if .Values.redis.existingSecret }}
-                name: {{ .Values.redis.existingSecret }}
-                key: {{ .Values.redis.existingSecretPasswordKey }}
+                {{- if .Values.redis.auth.existingSecret }}
+                name: {{ .Values.redis.auth.existingSecret }}
+                key: {{ .Values.redis.auth.existingSecretPasswordKey }}
                 {{- else }}
-                name: {{ include "tranql.redis.secretName" .}}
-                key: {{ include "tranql.redis.secretPasswordKey" . }}
+                name: {{ include "tranql.redis.auth.secretName" .}}
+                key: {{ include "tranql.redis.auth.secretPasswordKey" . }}
                 {{- end }}
             {{- end }}
           {{- else if .Values.existingRedis.password }}
