@@ -1,14 +1,21 @@
+# -- Image repository
 image: helxplatform/tranql
-# --  Overrides image tag. default is Chart.appversion
+# --  Overrids default is Chart.appversion image tag
 imageTagOverride: ""
+# -- (int) Number of tranql webserver replicas
 replicas: 1
+# -- (int) Tranql web server port
 port: 8081
 gunicorn:
+  # -- (int) Gunicorn worker count
   workerCount: 4
+  # -- (int) Gunicorn worker timeout
   workerTimeout: 1600
 service:
+  # -- (string) Tranql k8s service type
   type: ClusterIP
 
+# -- Resources for Tranql containers
 resources:
   requests:
     cpu: 250m
@@ -20,13 +27,14 @@ resources:
 # -- Tranql query timeout sent to redis in milliseconds
 tranql_redis_query_timeout: 10000 # 10 secs
 
+# -- Existing redis configuration, if used this will take presidence over redis connection deployed by enabling redis.
 existingRedis:
   host: ""
   port: ""
   password: ""
   secret: ""
   secretPasswordKey: ""
-
+# Ingress Configuration
 ingress:
   pathType: ImplementationSpecific
   annotations:
