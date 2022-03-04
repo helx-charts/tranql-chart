@@ -18,12 +18,12 @@ data:
         redis: true
         redis_connection_params:
           {{- if and .Values.redis.enabled }}
-          {{- if .Values.redis.cluster.slaveCount }}
-          host: {{ include "tranql.redis.fullname" . }}-slave
+          {{- if or .Values.redis.replica.count .Values.redis.replica.autoscaling.enabled }}
+          host: {{ include "tranql.redis.fullname" . }}-replicas
           {{ else }}
           host: {{ include "tranql.redis.fullname" . }}-master
           {{ end }}
-          port: {{ .Values.redis.redisPort }}
+          port: {{ .Values.redis.replica.service.port }}
           {{- else }}
           host: {{ .Values.existingRedis.host }}
           port: {{ .Values.existingRedis.port }}
